@@ -38,17 +38,25 @@ type ClientAuthentication interface {
 	RegisterUser(*User)
 }
 
+// Accounts
+type Account struct {
+	Name string
+	sl   *Sublist
+}
+
 // Nkey is for multiple nkey based users
 type NkeyUser struct {
 	Nkey        string       `json:"user"`
-	Permissions *Permissions `json:"permissions"`
+	Permissions *Permissions `json:"permissions,omitempty"`
+	Account     *Account     `json:"account,omitempty"`
 }
 
 // User is for multiple accounts/users.
 type User struct {
 	Username    string       `json:"user"`
 	Password    string       `json:"password"`
-	Permissions *Permissions `json:"permissions"`
+	Permissions *Permissions `json:"permissions,omitempty"`
+	Account     *Account     `json:"account,omitempty"`
 }
 
 // clone performs a deep copy of the User struct, returning a new clone with

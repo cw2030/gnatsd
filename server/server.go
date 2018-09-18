@@ -135,12 +135,6 @@ type Server struct {
 	profilingServer  *http.Server
 }
 
-// Accounts
-type Account struct {
-	Name string
-	sl   *Sublist
-}
-
 // Make sure all are 64bits for atomic use
 type stats struct {
 	inMsgs        int64

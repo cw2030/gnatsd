@@ -14,6 +14,7 @@
 package server
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -171,5 +172,115 @@ func TestNewAccountRequireNew(t *testing.T) {
 	l, _ = cr.ReadString('\n')
 	if !strings.HasPrefix(l, "-ERR ") {
 		t.Fatalf("Expected an error")
+	}
+}
+
+func accountNameExists(name string, accounts []*Account) bool {
+	for _, acc := range accounts {
+		if strings.Compare(acc.Name, name) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func TestAccountSimpleConfig(t *testing.T) {
+	confFileName := createConfFile(t, []byte(`accounts = [foo, bar]`))
+	defer os.Remove(confFileName)
+	opts, err := ProcessConfigFile(confFileName)
+	if err != nil {
+		t.Fatalf("Received an error processing config file: %v", err)
+	}
+	if la := len(opts.Accounts); la != 2 {
+		t.Fatalf("Expected to see 2 accounts in opts, got %d\n", la)
+	}
+	if !accountNameExists("foo", opts.Accounts) {
+		t.Fatal("Expected a 'foo' account")
+	}
+	if !accountNameExists("bar", opts.Accounts) {
+		t.Fatal("Expected a 'bar' account")
+	}
+
+	// Make sure double entries is an error.
+	confFileName = createConfFile(t, []byte(`accounts = [foo, foo]`))
+	defer os.Remove(confFileName)
+	_, err = ProcessConfigFile(confFileName)
+	if err == nil {
+		t.Fatalf("Expected an error with double account entries")
+	}
+}
+
+func TestAccountParseConfig(t *testing.T) {
+	confFileName := createConfFile(t, []byte(`
+    accounts {
+      synadia {
+        users = [
+          {user: alice, password: foo}
+          {user: bob, password: bar}
+        ]
+      }
+      nats.io {
+        users = [
+          {user: derek, password: foo}
+          {user: ivan, password: bar}
+        ]
+      }
+    }
+    `))
+	defer os.Remove(confFileName)
+	opts, err := ProcessConfigFile(confFileName)
+	if err != nil {
+		t.Fatalf("Received an error processing config file: %v", err)
+	}
+
+	if la := len(opts.Accounts); la != 2 {
+		t.Fatalf("Expected to see 2 accounts in opts, got %d\n", la)
+	}
+
+	if lu := len(opts.Users); lu != 4 {
+		t.Fatalf("Expected 4 total Users, got %d\n", lu)
+	}
+
+	var natsAcc *Account
+	for _, acc := range opts.Accounts {
+		if acc.Name == "nats.io" {
+			natsAcc = acc
+			break
+		}
+	}
+	if natsAcc == nil {
+		t.Fatalf("Error retrieving account for 'nats.io'")
+	}
+
+	for _, u := range opts.Users {
+		if u.Username == "derek" {
+			if u.Account != natsAcc {
+				t.Fatalf("Expected to see the 'nats.io' account, but received %+v", u.Account)
+				break
+			}
+		}
+	}
+}
+
+func TestAccountParseConfigDuplicateUsers(t *testing.T) {
+	confFileName := createConfFile(t, []byte(`
+    accounts {
+      synadia {
+        users = [
+          {user: alice, password: foo}
+          {user: bob, password: bar}
+        ]
+      }
+      nats.io {
+        users = [
+          {user: alice, password: bar}
+        ]
+      }
+    }
+    `))
+	defer os.Remove(confFileName)
+	_, err := ProcessConfigFile(confFileName)
+	if err == nil {
+		t.Fatalf("Expected an error with double user entries")
 	}
 }
