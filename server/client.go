@@ -876,7 +876,18 @@ func (c *client) authTimeout() {
 }
 
 func (c *client) authViolation() {
-	if c.srv != nil && c.srv.getOpts().Users != nil {
+	var hasNkeys, hasUsers bool
+	if s := c.srv; s != nil {
+		s.mu.Lock()
+		hasNkeys = s.nkeys != nil
+		hasUsers = s.users != nil
+		s.mu.Unlock()
+	}
+	if hasNkeys {
+		c.Errorf("%s - Nkey %q",
+			ErrAuthorization.Error(),
+			c.opts.Nkey)
+	} else if hasUsers {
 		c.Errorf("%s - User %q",
 			ErrAuthorization.Error(),
 			c.opts.Username)
