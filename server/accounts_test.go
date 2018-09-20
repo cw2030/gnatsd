@@ -375,7 +375,7 @@ func TestSimpleMapping(t *testing.T) {
 
 	// Normal Subscription on bar client.
 	go cbar.parse([]byte("SUB import.foo 1\r\nSUB import.foo bar 2\r\nPING\r\n"))
-	l, err := crBar.ReadString('\n') // Make sure subscriptions were processed.
+	_, err := crBar.ReadString('\n') // Make sure subscriptions were processed.
 	if err != nil {
 		t.Fatalf("Error for client 'bar' from server: %v", err)
 	}
@@ -386,7 +386,7 @@ func TestSimpleMapping(t *testing.T) {
 	checkMsg := func(l, sid string) {
 		t.Helper()
 		mraw := msgPat.FindAllStringSubmatch(l, -1)
-		if mraw == nil || len(mraw) == 0 {
+		if len(mraw) == 0 {
 			t.Fatalf("No message received")
 		}
 		matches := mraw[0]
@@ -399,7 +399,7 @@ func TestSimpleMapping(t *testing.T) {
 	}
 
 	// Now check we got the message from normal subscription.
-	l, err = crBar.ReadString('\n')
+	l, err := crBar.ReadString('\n')
 	if err != nil {
 		t.Fatalf("Error reading from client 'bar': %v", err)
 	}
@@ -440,7 +440,7 @@ func TestNoPrefixWildcardMapping(t *testing.T) {
 
 	// Normal Subscription on bar client for literal "foo".
 	go cbar.parse([]byte("SUB foo 1\r\nPING\r\n"))
-	l, err := crBar.ReadString('\n') // Make sure subscriptions were processed.
+	_, err := crBar.ReadString('\n') // Make sure subscriptions were processed.
 	if err != nil {
 		t.Fatalf("Error for client 'bar' from server: %v", err)
 	}
@@ -449,12 +449,12 @@ func TestNoPrefixWildcardMapping(t *testing.T) {
 	go cfoo.parseAndFlush([]byte("PUB foo 5\r\nhello\r\n"))
 
 	// Now check we got the message from normal subscription.
-	l, err = crBar.ReadString('\n')
+	l, err := crBar.ReadString('\n')
 	if err != nil {
 		t.Fatalf("Error reading from client 'bar': %v", err)
 	}
 	mraw := msgPat.FindAllStringSubmatch(l, -1)
-	if mraw == nil || len(mraw) == 0 {
+	if len(mraw) == 0 {
 		t.Fatalf("No message received")
 	}
 	matches := mraw[0]
@@ -493,7 +493,7 @@ func TestPrefixWildcardMapping(t *testing.T) {
 
 	// Normal Subscription on bar client for wildcard.
 	go cbar.parse([]byte("SUB pub.imports.* 1\r\nPING\r\n"))
-	l, err := crBar.ReadString('\n') // Make sure subscriptions were processed.
+	_, err := crBar.ReadString('\n') // Make sure subscriptions were processed.
 	if err != nil {
 		t.Fatalf("Error for client 'bar' from server: %v", err)
 	}
@@ -502,12 +502,12 @@ func TestPrefixWildcardMapping(t *testing.T) {
 	go cfoo.parseAndFlush([]byte("PUB foo 5\r\nhello\r\n"))
 
 	// Now check we got the messages from wildcard subscription.
-	l, err = crBar.ReadString('\n')
+	l, err := crBar.ReadString('\n')
 	if err != nil {
 		t.Fatalf("Error reading from client 'bar': %v", err)
 	}
 	mraw := msgPat.FindAllStringSubmatch(l, -1)
-	if mraw == nil || len(mraw) == 0 {
+	if len(mraw) == 0 {
 		t.Fatalf("No message received")
 	}
 	matches := mraw[0]
@@ -546,7 +546,7 @@ func TestPrefixWildcardMappingWithLiteralSub(t *testing.T) {
 
 	// Normal Subscription on bar client for wildcard.
 	go cbar.parse([]byte("SUB pub.imports.foo 1\r\nPING\r\n"))
-	l, err := crBar.ReadString('\n') // Make sure subscriptions were processed.
+	_, err := crBar.ReadString('\n') // Make sure subscriptions were processed.
 	if err != nil {
 		t.Fatalf("Error for client 'bar' from server: %v", err)
 	}
@@ -555,12 +555,12 @@ func TestPrefixWildcardMappingWithLiteralSub(t *testing.T) {
 	go cfoo.parseAndFlush([]byte("PUB foo 5\r\nhello\r\n"))
 
 	// Now check we got the messages from wildcard subscription.
-	l, err = crBar.ReadString('\n')
+	l, err := crBar.ReadString('\n')
 	if err != nil {
 		t.Fatalf("Error reading from client 'bar': %v", err)
 	}
 	mraw := msgPat.FindAllStringSubmatch(l, -1)
-	if mraw == nil || len(mraw) == 0 {
+	if len(mraw) == 0 {
 		t.Fatalf("No message received")
 	}
 	matches := mraw[0]

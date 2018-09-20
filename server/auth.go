@@ -125,7 +125,7 @@ func (a *Account) checkImportAuthorized(account *Account, subject string) bool {
 		return ok
 	}
 	// ok if we are here we did not match directly so we need to test each one.
-	// The import subject arg has to take precedance, meaning the export
+	// The import subject arg has to take precedence, meaning the export
 	// has to be a true subset of the import claim. We already checked for
 	// exact matches above.
 
