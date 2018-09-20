@@ -395,13 +395,17 @@ func TestClientNoBodyPubSubWithReply(t *testing.T) {
 	}
 }
 
-func (c *client) parseFlushAndClose(op []byte) {
+func (c *client) parseAndFlush(op []byte) {
 	c.parse(op)
 	for cp := range c.pcd {
 		cp.mu.Lock()
 		cp.flushOutbound()
 		cp.mu.Unlock()
 	}
+}
+
+func (c *client) parseFlushAndClose(op []byte) {
+	c.parseAndFlush(op)
 	c.nc.Close()
 }
 
