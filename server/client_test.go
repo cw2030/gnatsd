@@ -395,10 +395,12 @@ func TestClientNoBodyPubSubWithReply(t *testing.T) {
 	}
 }
 
+// This needs to clear any flushOutbound flags since writeLoop not running.
 func (c *client) parseAndFlush(op []byte) {
 	c.parse(op)
 	for cp := range c.pcd {
 		cp.mu.Lock()
+		cp.flags.clear(flushOutbound)
 		cp.flushOutbound()
 		cp.mu.Unlock()
 	}
