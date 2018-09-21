@@ -57,6 +57,8 @@ func newClientForServer(s *Server) (*client, *bufio.Reader, string) {
 	cr := bufio.NewReaderSize(cli, maxBufSize)
 	ch := make(chan *client)
 	createClientAsync(ch, s, srv)
+	// So failing tests don't just hang.
+	cli.SetReadDeadline(time.Now().Add(2 * time.Second))
 	l, _ := cr.ReadString('\n')
 	// Grab client
 	c := <-ch
