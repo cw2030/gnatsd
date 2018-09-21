@@ -285,6 +285,7 @@ const (
 )
 
 func checkPayload(cr *bufio.Reader, expected []byte, t *testing.T) {
+	t.Helper()
 	// Read in payload
 	d := make([]byte, len(expected))
 	n, err := cr.Read(d)

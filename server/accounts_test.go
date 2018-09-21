@@ -616,7 +616,7 @@ func TestCrossAccountRequestReply(t *testing.T) {
 
 	// Now send the request. Remember we expect the request on our local foo. We added the route
 	// with that "from" and will map it to "test.request"
-	go cbar.parseAndFlush([]byte("SUB bar 1\r\nPUB foo bar 4\r\nhelp\r\n"))
+	go cbar.parseAndFlush([]byte("SUB bar 11\r\nPUB foo bar 4\r\nhelp\r\n"))
 
 	// Now read the request from crFoo
 	l, err := crFoo.ReadString('\n')
@@ -647,6 +647,21 @@ func TestCrossAccountRequestReply(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading from client 'bar': %v", err)
 	}
+	mraw = msgPat.FindAllStringSubmatch(l, -1)
+	if len(mraw) == 0 {
+		t.Fatalf("No message received")
+	}
+	matches = mraw[0]
+	if matches[SUB_INDEX] != "bar" {
+		t.Fatalf("Did not get correct subject: '%s'\n", matches[SUB_INDEX])
+	}
+	if matches[SID_INDEX] != "11" {
+		t.Fatalf("Did not get correct sid: '%s'\n", matches[SID_INDEX])
+	}
+	if matches[REPLY_INDEX] != "" {
+		t.Fatalf("Did not get correct sid: '%s'\n", matches[SID_INDEX])
+	}
+	checkPayload(crBar, []byte("22\r\n"), t)
 
 	// Make sure we have no routes on fooAcc. An implicit one was created
 	/// for the response but should be removed when the response was processed.
